@@ -10,7 +10,6 @@ def index_product_in_pinecone(product_data: dict) -> str:
         product_data["description"],
         product_data["style_tags"],
         product_data["category"],
-        product_data["color"],
         product_data["season"]
     )
 
@@ -20,7 +19,6 @@ def index_product_in_pinecone(product_data: dict) -> str:
         "name": product_data["name"],
         "category": product_data["category"],
         "style_tags": product_data["style_tags"],
-        "color": product_data["color"],
         "season": product_data["season"],
         "gender": product_data["gender"],
         "description": product_data["description"],
