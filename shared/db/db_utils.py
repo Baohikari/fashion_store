@@ -30,6 +30,7 @@ def group_variants(products: list) -> list:
 
         if key not in grouped:
             grouped[key] = {
+                "id": p["id"],
                 "name": p["name"],
                 "category": p["category"],
                 "description": p["description"],

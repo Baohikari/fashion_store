@@ -72,24 +72,26 @@ def get_product_by_keyword(keyword: str, page: int = 1, page_size: int = 5, tool
     
 def get_product_details(index: int, tool_context: ToolContext) -> dict:
     """
-    Show detailed information of a product from either:
-    - the last search result (search by keyword), or
-    - the last outfit advised.
+    Retrieve and display detailed information about a specific product selected by its index.
+
+    This tool allows the agent to fetch full details of a product either from the latest product search
+    results or from the most recent outfit suggestion. The index is 1-based and corresponds to the position
+    in the displayed product list.
 
     Priority:
-    - If 'last_search_results' exists -> use it
-    - Else if 'last_outfit_suggestion' exists -> convert outfit dict to list by order: topwear, bottomwear, footwear, accessories
+    - Use 'last_search_results' if available
+    - Fallback to 'last_outfit_suggestion' if no search results are stored
 
     Args:
-        index (int): 1-based index of the product to view.
-        tool_context (ToolContext): Provided by ADK framework.
+        index (int): 1-based index of the product to retrieve.
+        tool_context (ToolContext): ADK framework context containing user session state.
 
     Returns:
-        dict: {
-            status: "success" or "failed",
-            message: str
-        }
+        dict: A dictionary with:
+            - status (str): "success" or "failed"
+            - message (str): Formatted product information or an error message
     """
+
     try:
         # Try search results first
         results = tool_context.state.get("last_search_results")
@@ -173,6 +175,12 @@ def add_to_cart(index: int, quantity: int = 1, tool_context: ToolContext = None)
             "message": "Invalid product index."
         }
     product = results[index - 1]
+    if "id" not in product:
+        return {
+            "status": "failed",
+            "message": "Selected product has no ID. Please try again after searching again."
+        }
+
     cart = tool_context.state.get("cart", [])
 
     for item in cart:
@@ -186,7 +194,7 @@ def add_to_cart(index: int, quantity: int = 1, tool_context: ToolContext = None)
             "quantity": quantity,
             "unit_price": product["price"]
         })
-    tool_context["cart"] = cart
+    tool_context.state["cart"] = cart
     return {
         "status": "success",
         "message": f"Added {quantity} of '{product['name']}' to your cart."
@@ -261,12 +269,12 @@ def place_order(customer_name: str, phone: str, comment: str = "", tool_context:
             "total_price": total_price,
         }
         add_order(order_data)
-    tool_context["cart"] = []
+    tool_context.state["cart"] = []
     return {
         "status": "success",
         "message": "Order placed successfully. Thank u for shopping."
     }
-THRESHOLD = 0.8
+THRESHOLD = 0.4
 
 CATEGORY_MAP = {
     "topwear": ["top", "shirt", "blouse", "tank", "tee"],
